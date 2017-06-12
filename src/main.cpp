@@ -78,12 +78,13 @@ rd_kafka_t * createKafkaConsumer() {
             "127.0.0.1", errstr, sizeof(errstr));
     kf_conf_result = rd_kafka_conf_set(kf_conf, "batch.num.messages", "100",
             errstr, sizeof(errstr));
+
+    // Need to set this extra group.id parameter - rdkafka will return error
+    // when subscribing to topics if this parameter is not set.
     kf_conf_result = rd_kafka_conf_set(kf_conf, "group.id", "demo-group",
             errstr, sizeof(errstr));
 
-    // Set the callback to inform the result of every message sent by this
-    // producer.
-    rd_kafka_conf_set_dr_msg_cb(kf_conf, message_receipt_cbk);
+    // No need to set message delivery callbacks
 
     return rd_kafka_new(RD_KAFKA_CONSUMER, kf_conf, errstr, 512);
 }
@@ -157,13 +158,21 @@ void startConsumer() {
     // Now we have our consumer. We need to create a list of topics to subscribe
     rd_kafka_topic_partition_list_t * kf_topics = rd_kafka_topic_partition_list_new(1);
     rd_kafka_topic_partition_list_add(kf_topics, "demo-default-topic", 0);
+
+    // And subscribe!
     rd_kafka_resp_err_t ret = rd_kafka_subscribe(kf_consumer, kf_topics);
     std::cout << "Result: " << ret << std::endl;
 
+
+    // Another possibility is to use rd_kafka_consumer_callback - it will
+    // retrieve all the requested messages faster than any other function (as
+    // the documentation says)
     while (isRunning) {
         consumerCallback(rd_kafka_consumer_poll(kf_consumer, 1000), nullptr);
     }
     std::cout << "Exitting consumer" << std::endl;
+
+    // Destroy everything
     rd_kafka_unsubscribe(kf_consumer);
     rd_kafka_topic_partition_list_destroy(kf_topics);
     destroyKafkaEntity(kf_consumer);
