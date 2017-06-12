@@ -21,6 +21,7 @@ AC_ARG_WITH([rdkafka],
 
 # Checks for libraries.
 AC_CHECK_LIB([rdkafka], [rd_kafka_new], [], [AC_MSG_ERROR([rdkafka was not found])])
+AC_CHECK_LIB([pthread], [pthread_create], [], [AC_MSG_ERROR([rdkafka was not found])])
 
 # Checks for header files.
 
