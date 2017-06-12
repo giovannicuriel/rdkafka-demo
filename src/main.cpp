@@ -157,7 +157,7 @@ void startConsumer() {
 
     // Now we have our consumer. We need to create a list of topics to subscribe
     rd_kafka_topic_partition_list_t * kf_topics = rd_kafka_topic_partition_list_new(1);
-    rd_kafka_topic_partition_list_add(kf_topics, "demo-default-topic", 0);
+    rd_kafka_topic_partition_list_add(kf_topics, "^demo-default-topic.*", 0);
 
     // And subscribe!
     rd_kafka_resp_err_t ret = rd_kafka_subscribe(kf_consumer, kf_topics);
@@ -168,7 +168,7 @@ void startConsumer() {
     // retrieve all the requested messages faster than any other function (as
     // the documentation says)
     while (isRunning) {
-        consumerCallback(rd_kafka_consumer_poll(kf_consumer, 1000), nullptr);
+        consumerCallback(rd_kafka_consumer_poll(kf_consumer, 10000), nullptr);
     }
     std::cout << "Exitting consumer" << std::endl;
 
@@ -197,7 +197,7 @@ int main(void) {
 
     // Now we have our producer. We need to create a topic so that we
     // can send messages.
-    rd_kafka_topic_t * kf_topic = createTopic("demo-default-topic",
+    rd_kafka_topic_t * kf_topic = createTopic("demo-default-topic.xis",
             kf_producer);
 
     std::thread thr(startConsumer);
